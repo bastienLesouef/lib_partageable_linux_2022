@@ -4,35 +4,43 @@
 
 int main(int argc, char ** argv)
 {
-	// in this main we have removed the explicit 
-	// link to the components.
-	int valeur1=3;
-	int valeur2=5;
+	int data1=3;
+	int data2=5;
+
+	int valeur;
+	int choice = -1;
 	
-	// we'll use dlopen 
-	void *handle1 = nullptr;
-    	void *handle2 = nullptr;
+	//Chose the component 
+	while (choice != 1 && choice != 2) {
+		std::cout << "Which component do you want? Type 1 or 2." << std::endl;
+		std::cin >> choice;
+	}
 	
-	handle1 = dlopen("./libComposant1.so", RTLD_LAZY);
-	handle2 = dlopen("./libComposant2.so", RTLD_LAZY);
+	//Open the right file
+	void* hndl = nullptr; 
+	if (choice == 1){
+		hndl = dlopen("./libComposant1.so", RTLD_LAZY);
+	}else if (choice == 2){
+		hndl = dlopen("./libComposant2.so", RTLD_LAZY);
+	}
+		
+	int (*fct) (int, int);
+	if (choice == 1) {
+		fct = (int (*) (int, int)) dlsym(hndl, "composant1");
+	} else if (choice == 2){
+		fct = (int (*) (int, int)) dlsym(hndl, "composant2");
+	}
 	
-	// check if there is some errors during the link
-	if (!handle1 || !handle2) {
-        	fprintf(stderr, "%s\n", dlerror());
-        	exit(EXIT_FAILURE);
-    	}
+	//Return error
+	if (!fct) {
+		std::cerr << "dlsym : " << dlerror() << std::endl;
+		exit(EXIT_FAILURE);
+	}
 	
-	int (*composant1)(int, int);
-    	int (*composant2)(int, int);
-    	*(void **) (&composant1) = dlsym(handle1, "composant1");
-    	*(void **) (&composant2) = dlsym(handle2, "composant2");
+	//Final print 
+	std::cout << "The value is:" << fct(data1, data2) << std::endl;
 	
-	valeur1 = (*composant1)(valeur1,valeur2);
-    	valeur2 = (*composant2)(valeur1,valeur2);
-    	std::cout << "valeur 1 :" << valeur1 << " valeur 2 :" << valeur2 << std::endl;
-	
-	// close the dll
-    	dlclose(handle1);
-    	dlclose(handle2);
-    	exit(EXIT_SUCCESS);
+	//Close 
+	dlclose(hndl);
+	exit(EXIT_SUCCESS);
 }
