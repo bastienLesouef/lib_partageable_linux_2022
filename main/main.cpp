@@ -4,10 +4,10 @@
 
 int main(int argc, char ** argv)
 {
+	// allows us to select from the bash command
+	// the desired component.
 	int data1=3;
 	int data2=5;
-
-	int valeur;
 	int choice = -1;
 	
 	//Chose the component 
@@ -16,7 +16,7 @@ int main(int argc, char ** argv)
 		std::cin >> choice;
 	}
 	
-	//Open the right file
+	//Open the wanted lib
 	void* hndl = nullptr; 
 	if (choice == 1){
 		hndl = dlopen("./libComposant1.so", RTLD_LAZY);
@@ -31,7 +31,7 @@ int main(int argc, char ** argv)
 		fct = (int (*) (int, int)) dlsym(hndl, "composant2");
 	}
 	
-	//Return error
+	// error management
 	if (!fct) {
 		std::cerr << "dlsym : " << dlerror() << std::endl;
 		exit(EXIT_FAILURE);
